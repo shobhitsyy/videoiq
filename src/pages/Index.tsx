@@ -67,7 +67,7 @@ export default function Index() {
                   </div>
                   <h3 className="text-xl font-semibold text-slate-900 mb-2">Create Social Content</h3>
                   <p className="text-slate-600">
-                    Transform your content into engaging social media posts for Twitter, LinkedIn, Instagram, and blog articles.
+                    Transform any YouTube video or your own content into engaging social media posts for Twitter, LinkedIn, Instagram, and blog articles.
                   </p>
                 </div>
               </Card>

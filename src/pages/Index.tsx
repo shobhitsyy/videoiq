@@ -11,6 +11,7 @@ import { Sparkles, Video, FileText, Share2 } from "lucide-react";
 
 const Index = () => {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [uploadedUrl, setUploadedUrl] = useState<string | null>(null);
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
   const [selectedStyle, setSelectedStyle] = useState("friendly");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -18,7 +19,7 @@ const Index = () => {
   const [currentStep, setCurrentStep] = useState(1);
 
   const handleGenerate = async () => {
-    if (!uploadedFile || selectedPlatforms.length === 0) return;
+    if ((!uploadedFile && !uploadedUrl) || selectedPlatforms.length === 0) return;
     
     setIsProcessing(true);
     setCurrentStep(2);
@@ -48,11 +49,15 @@ const Index = () => {
 
   const resetProcess = () => {
     setUploadedFile(null);
+    setUploadedUrl(null);
     setSelectedPlatforms([]);
     setGeneratedContent({});
     setCurrentStep(1);
     setIsProcessing(false);
   };
+
+  const hasUpload = uploadedFile || uploadedUrl;
+  const uploadName = uploadedFile ? uploadedFile.name : uploadedUrl || "content";
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
@@ -122,7 +127,12 @@ const Index = () => {
                   <Video className="w-5 h-5 mr-2 text-blue-600" />
                   Upload Your Content
                 </h2>
-                <FileUpload onFileUpload={setUploadedFile} uploadedFile={uploadedFile} />
+                <FileUpload 
+                  onFileUpload={setUploadedFile} 
+                  onUrlUpload={setUploadedUrl}
+                  uploadedFile={uploadedFile} 
+                  uploadedUrl={uploadedUrl}
+                />
               </Card>
 
               <Card className="p-6 bg-white/70 backdrop-blur-sm border-slate-200/50 shadow-xl">
@@ -151,11 +161,11 @@ const Index = () => {
                 <div className="text-center">
                   <h3 className="text-lg font-semibold text-slate-900 mb-2">Ready to Generate?</h3>
                   <p className="text-slate-600 mb-6">
-                    Transform your {uploadedFile?.name || "video"} into engaging content for {selectedPlatforms.length} platform{selectedPlatforms.length !== 1 ? 's' : ''}.
+                    Transform your {uploadName} into engaging content for {selectedPlatforms.length} platform{selectedPlatforms.length !== 1 ? 's' : ''}.
                   </p>
                   <Button 
                     onClick={handleGenerate}
-                    disabled={!uploadedFile || selectedPlatforms.length === 0}
+                    disabled={!hasUpload || selectedPlatforms.length === 0}
                     className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium py-3 px-6 rounded-lg shadow-lg shadow-blue-200 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Sparkles className="w-5 h-5 mr-2" />

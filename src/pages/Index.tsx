@@ -1,75 +1,10 @@
-import { useState } from "react";
+
 import { RotateCcw, Target, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { QuickActions } from "@/components/QuickActions";
-import { FileUpload } from "@/components/FileUpload";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 
 export default function Index() {
-  const [transcript, setTranscript] = useState("");
-  const [metadata, setMetadata] = useState<{title?: string; duration?: string}>({});
-  const [isTranscribing, setIsTranscribing] = useState(false);
-  const { toast } = useToast();
-
-  const handleFileUpload = async (file: File | null, url: string | null) => {
-    if (!file && !url) return;
-    
-    setIsTranscribing(true);
-    
-    try {
-      const fileToBase64 = (file: File): Promise<string> => {
-        return new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.readAsDataURL(file);
-          reader.onload = () => {
-            const base64 = reader.result as string;
-            resolve(base64.split(',')[1]);
-          };
-          reader.onerror = error => reject(error);
-        });
-      };
-
-      const transcribeResponse = await supabase.functions.invoke('transcribe-audio', {
-        body: { 
-          audioData: file ? await fileToBase64(file) : null,
-          url: url 
-        }
-      });
-
-      if (transcribeResponse.error) {
-        throw new Error(transcribeResponse.error.message);
-      }
-
-      const { transcript: generatedTranscript, metadata: transcriptMetadata } = transcribeResponse.data;
-      
-      setTranscript(generatedTranscript);
-      setMetadata(transcriptMetadata || {});
-
-      toast({
-        title: "Content Transcribed!",
-        description: "Your content has been transcribed and is ready for AI analysis.",
-      });
-
-    } catch (error) {
-      console.error('Error transcribing:', error);
-      toast({
-        title: "Transcription Failed",
-        description: error instanceof Error ? error.message : "An unexpected error occurred",
-        variant: "destructive",
-      });
-    } finally {
-      setIsTranscribing(false);
-    }
-  };
-
-  const handleStartOver = () => {
-    setTranscript("");
-    setMetadata({});
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       <header className="border-b border-slate-200/50 bg-white/70 backdrop-blur-sm sticky top-0 z-50">
@@ -91,15 +26,6 @@ export default function Index() {
               >
                 About Us
               </Link>
-              <Button
-                onClick={handleStartOver}
-                variant="outline"
-                size="sm"
-                className="flex items-center gap-2"
-              >
-                <RotateCcw className="w-4 h-4" />
-                Start Over
-              </Button>
             </div>
           </div>
         </div>
@@ -148,54 +74,35 @@ export default function Index() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Left Column: File Upload and Transcription Display */}
-          <div className="flex flex-col">
-            <Card className="mb-6 p-4 sm:p-6 bg-white/70 backdrop-blur-sm border-slate-200/50 shadow-xl">
-              <h2 className="text-lg font-semibold text-slate-900 mb-4">
-                Upload Media for Transcription
-              </h2>
-              {isTranscribing ? (
-                <div className="text-center py-8">
-                  <div className="inline-block animate-spin rounded-full h-6 w-6 border-2 border-blue-600 border-t-transparent"></div>
-                  <p className="mt-2 text-sm text-slate-600">Transcribing your content...</p>
-                </div>
-              ) : (
-                <FileUpload 
-                  onFileUpload={(file) => handleFileUpload(file, null)}
-                  onUrlUpload={(url) => handleFileUpload(null, url)}
-                  uploadedFile={null}
-                  uploadedUrl={null}
-                />
-              )}
-            </Card>
-
-            {transcript ? (
-              <Card className="p-4 sm:p-6 bg-white/70 backdrop-blur-sm border-slate-200/50 shadow-xl flex-grow">
-                <h2 className="text-lg font-semibold text-slate-900 mb-4">
-                  Transcription
-                </h2>
-                {metadata?.title && (
-                  <div className="mb-2">
-                    <span className="font-semibold text-slate-700">Title:</span>{" "}
-                    <span className="text-slate-600">{metadata.title}</span>
-                  </div>
-                )}
-                {metadata?.duration && (
-                  <div className="mb-2">
-                    <span className="font-semibold text-slate-700">Duration:</span>{" "}
-                    <span className="text-slate-600">{metadata.duration}</span>
-                  </div>
-                )}
-                
-              </Card>
-            ) : null}
-          </div>
-
-          {/* Right Column: Quick Actions */}
-          <div>
-            <QuickActions transcript={transcript} metadata={metadata} onReset={handleStartOver} />
-          </div>
+        {/* Additional Information Section */}
+        <div className="text-center">
+          <Card className="p-8 bg-white/70 backdrop-blur-sm border-slate-200/50 shadow-xl max-w-3xl mx-auto">
+            <h3 className="text-2xl font-bold text-slate-900 mb-4">
+              Transform Your Media with AI
+            </h3>
+            <p className="text-lg text-slate-600 mb-6">
+              EchoScript makes it easy to extract valuable insights from your audio and video content. 
+              Upload your media files and let our AI do the heavy lifting.
+            </p>
+            <div className="grid md:grid-cols-2 gap-6 text-left">
+              <div>
+                <h4 className="font-semibold text-slate-900 mb-2">📹 Supported Formats</h4>
+                <p className="text-slate-600 text-sm">MP4, MOV, MP3, WAV and other popular formats</p>
+              </div>
+              <div>
+                <h4 className="font-semibold text-slate-900 mb-2">🚀 Fast Processing</h4>
+                <p className="text-slate-600 text-sm">Get transcripts and insights in minutes, not hours</p>
+              </div>
+              <div>
+                <h4 className="font-semibold text-slate-900 mb-2">🧠 AI-Powered</h4>
+                <p className="text-slate-600 text-sm">Advanced AI for accurate transcription and analysis</p>
+              </div>
+              <div>
+                <h4 className="font-semibold text-slate-900 mb-2">📱 Multi-Platform</h4>
+                <p className="text-slate-600 text-sm">Generate content for all major social platforms</p>
+              </div>
+            </div>
+          </Card>
         </div>
       </main>
     </div>

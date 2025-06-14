@@ -16,6 +16,7 @@ const InsightsMode = () => {
   const [uploadedUrl, setUploadedUrl] = useState<string | null>(null);
   const [transcript, setTranscript] = useState<string>("");
   const [metadata, setMetadata] = useState<{ title?: string; duration?: string } | undefined>();
+  const [platformContent, setPlatformContent] = useState<Record<string, string>>({});
 
   const handleFileUpload = (file: File | null) => {
     setUploadedFile(file);
@@ -35,12 +36,17 @@ const InsightsMode = () => {
     }
   };
 
+  const handleContentEdit = (content: Record<string, string>) => {
+    setPlatformContent(content);
+  };
+
   const handleStartOver = () => {
     setPurpose(null);
     setUploadedFile(null);
     setUploadedUrl(null);
     setTranscript("");
     setMetadata(undefined);
+    setPlatformContent({});
   };
 
   // Purpose Selection Screen
@@ -201,7 +207,12 @@ const InsightsMode = () => {
                 <Share2 className="w-6 h-6 text-purple-600 mr-3" />
                 <h2 className="text-xl font-semibold text-slate-900">Social Media Content Generation</h2>
               </div>
-              <ContentTabs transcript={transcript} metadata={metadata} />
+              <ContentTabs 
+                platformContent={platformContent}
+                onContentEdit={handleContentEdit}
+                transcript={transcript} 
+                metadata={metadata} 
+              />
             </div>
           )}
         </Card>

@@ -68,6 +68,11 @@ const Index = () => {
       const { content } = processResponse.data;
       console.log('Content generation completed');
       
+      setCurrentStep(4);
+      
+      // Step 3: Finalize content (simulate brief processing)
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       setGeneratedContent(content);
       setCurrentStep(5);
       setIsProcessing(false);

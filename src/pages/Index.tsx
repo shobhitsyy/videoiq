@@ -223,14 +223,12 @@ const Index = () => {
           />
         ) : (
           <div className="space-y-6">
-            {/* Quick Actions for Direct AI Access */}
-            {transcript && (
-              <QuickActions 
-                transcript={transcript} 
-                metadata={metadata}
-                onReset={resetProcess}
-              />
-            )}
+            {/* Quick Actions - Always Visible for Direct AI Access */}
+            <QuickActions 
+              transcript={transcript} 
+              metadata={metadata}
+              onReset={resetProcess}
+            />
 
             <div className={`grid grid-cols-1 ${isMobile ? 'gap-4' : 'lg:grid-cols-2 gap-8'}`}>
               {/* Left Column - Input */}

@@ -53,7 +53,7 @@ export default function Index() {
                   </div>
                   <h3 className="text-xl font-semibold text-slate-900 mb-2">Get AI Insights</h3>
                   <p className="text-slate-600">
-                    Analyze your content to get summaries, key points, and ask questions to understand your material better.
+                    Analyze any YouTube video or your own content to get summaries, key points, and ask questions to understand your material better.
                   </p>
                 </div>
               </Card>

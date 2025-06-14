@@ -8,8 +8,8 @@ interface ProcessingStatusProps {
 
 const steps = [
   { id: 2, icon: FileText, title: "Transcribing Audio", description: "Converting speech to text..." },
-  { id: 3, icon: Sparkles, title: "Analyzing Content", description: "Extracting key insights and themes..." },
-  { id: 4, icon: Share2, title: "Generating Content", description: "Creating platform-specific content..." },
+  { id: 3, icon: Sparkles, title: "Analyzing with Claude AI", description: "Understanding content and generating platform-specific posts..." },
+  { id: 4, icon: Share2, title: "Finalizing Content", description: "Polishing and formatting for each platform..." },
 ];
 
 export const ProcessingStatus = ({ currentStep }: ProcessingStatusProps) => {
@@ -20,8 +20,8 @@ export const ProcessingStatus = ({ currentStep }: ProcessingStatusProps) => {
           <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
             <Loader2 className="w-8 h-8 text-white animate-spin" />
           </div>
-          <h2 className="text-2xl font-bold text-slate-900 mb-2">Processing Your Content</h2>
-          <p className="text-slate-600">Sit back while we transform your video into engaging content</p>
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">AI Processing Your Content</h2>
+          <p className="text-slate-600">Claude AI is analyzing your content and creating unique posts for each platform</p>
         </div>
 
         <div className="space-y-4">

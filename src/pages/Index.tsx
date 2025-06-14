@@ -8,6 +8,8 @@ import { ProcessingStatus } from "@/components/ProcessingStatus";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Sparkles, Video, FileText, Share2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -17,6 +19,7 @@ const Index = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [generatedContent, setGeneratedContent] = useState<Record<string, string>>({});
   const [currentStep, setCurrentStep] = useState(1);
+  const { toast } = useToast();
 
   const handleGenerate = async () => {
     if ((!uploadedFile && !uploadedUrl) || selectedPlatforms.length === 0) return;
@@ -24,27 +27,74 @@ const Index = () => {
     setIsProcessing(true);
     setCurrentStep(2);
     
-    // Simulate processing steps
-    setTimeout(() => setCurrentStep(3), 2000); // Transcription
-    setTimeout(() => setCurrentStep(4), 4000); // Analysis
-    setTimeout(() => {
-      // Mock generated content
-      const mockContent = {
-        blog: "# Transforming Ideas into Action\n\nIn today's fast-paced world, the ability to convert concepts into tangible results is what separates successful individuals from dreamers...",
-        twitter: "🧵 Thread: Why most people fail to turn ideas into reality (and how to be different)\n\n1/ We all have brilliant ideas, but execution is where the magic happens...",
-        linkedin: "After analyzing hundreds of successful projects, I've discovered the #1 factor that determines whether an idea becomes reality: systematic execution...",
-        instagram: "✨ Your ideas are worth nothing until you act on them! 💪\n\nSwipe to see my proven framework for turning ANY idea into reality 👆\n\n#entrepreneur #productivity #success"
-      };
-      
-      const content: Record<string, string> = {};
-      selectedPlatforms.forEach(platform => {
-        content[platform] = mockContent[platform as keyof typeof mockContent] || "";
+    try {
+      // Step 1: Transcribe audio/video
+      console.log('Starting transcription...');
+      const transcribeResponse = await supabase.functions.invoke('transcribe-audio', {
+        body: { 
+          audioData: uploadedFile ? await fileToBase64(uploadedFile) : null,
+          url: uploadedUrl 
+        }
       });
+
+      if (transcribeResponse.error) {
+        throw new Error(transcribeResponse.error.message);
+      }
+
+      const { transcript } = transcribeResponse.data;
+      console.log('Transcription completed');
+      
+      setCurrentStep(3);
+      
+      // Step 2: Analyze and generate content
+      console.log('Generating content with Claude...');
+      const processResponse = await supabase.functions.invoke('process-video', {
+        body: {
+          transcript,
+          platforms: selectedPlatforms,
+          style: selectedStyle
+        }
+      });
+
+      if (processResponse.error) {
+        throw new Error(processResponse.error.message);
+      }
+
+      const { content } = processResponse.data;
+      console.log('Content generation completed');
       
       setGeneratedContent(content);
-      setIsProcessing(false);
       setCurrentStep(5);
-    }, 6000);
+      setIsProcessing(false);
+
+      toast({
+        title: "Content Generated!",
+        description: `Successfully created content for ${selectedPlatforms.length} platform${selectedPlatforms.length !== 1 ? 's' : ''}`,
+      });
+
+    } catch (error) {
+      console.error('Error generating content:', error);
+      setIsProcessing(false);
+      setCurrentStep(1);
+      
+      toast({
+        title: "Generation Failed",
+        description: error instanceof Error ? error.message : "An unexpected error occurred",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const base64 = reader.result as string;
+        resolve(base64.split(',')[1]); // Remove data:type;base64, prefix
+      };
+      reader.onerror = error => reject(error);
+    });
   };
 
   const resetProcess = () => {
@@ -71,7 +121,7 @@ const Index = () => {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-slate-900">ContentAI</h1>
-                <p className="text-sm text-slate-600">Video to Content Converter</p>
+                <p className="text-sm text-slate-600">AI-Powered Content Generator</p>
               </div>
             </div>
             <Button variant="outline" onClick={resetProcess} className="hidden sm:flex">
@@ -87,7 +137,7 @@ const Index = () => {
           <div className="flex items-center justify-center space-x-4 mb-6">
             {[
               { step: 1, icon: Video, label: "Upload" },
-              { step: 2, icon: FileText, label: "Process" },
+              { step: 2, icon: FileText, label: "Transcribe" },
               { step: 3, icon: Sparkles, label: "Generate" },
               { step: 4, icon: Share2, label: "Export" }
             ].map(({ step, icon: Icon, label }) => (
@@ -165,11 +215,11 @@ const Index = () => {
                   </p>
                   <Button 
                     onClick={handleGenerate}
-                    disabled={!hasUpload || selectedPlatforms.length === 0}
+                    disabled={!hasUpload || selectedPlatforms.length === 0 || isProcessing}
                     className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium py-3 px-6 rounded-lg shadow-lg shadow-blue-200 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Sparkles className="w-5 h-5 mr-2" />
-                    Generate Content
+                    {isProcessing ? 'Generating...' : 'Generate Content'}
                   </Button>
                 </div>
               </Card>

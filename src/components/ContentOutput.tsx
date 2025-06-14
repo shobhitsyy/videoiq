@@ -1,15 +1,18 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Copy, Download, Edit3, Twitter, Linkedin, Instagram, FileText } from "lucide-react";
+import { Copy, Download, Edit3, Twitter, Linkedin, Instagram, FileText, Wand2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ContentOutputProps {
   content: Record<string, string>;
   onEdit: (content: Record<string, string>) => void;
+  transcript?: string;
+  metadata?: { title?: string; duration?: string };
 }
 
 const platformConfig = {
@@ -19,12 +22,68 @@ const platformConfig = {
   instagram: { name: "Instagram Caption", icon: Instagram, color: "text-pink-600" },
 };
 
-export const ContentOutput = ({ content, onEdit }: ContentOutputProps) => {
+export const ContentOutput = ({ content, onEdit, transcript, metadata }: ContentOutputProps) => {
   const [editingPlatform, setEditingPlatform] = useState<string | null>(null);
   const [editContent, setEditContent] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
   const { toast } = useToast();
 
   const platforms = Object.keys(content);
+  const hasContent = platforms.length > 0;
+
+  const generateContent = async () => {
+    if (!transcript || selectedPlatforms.length === 0) {
+      toast({
+        title: "Missing Information",
+        description: "Please select platforms and ensure transcript is available",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGenerating(true);
+    
+    try {
+      const response = await supabase.functions.invoke('generate-social-content', {
+        body: {
+          transcript,
+          platforms: selectedPlatforms,
+          metadata
+        }
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message);
+      }
+
+      const generatedContent = response.data.content;
+      onEdit(generatedContent);
+
+      toast({
+        title: "Content Generated!",
+        description: "Your social media content has been generated successfully.",
+      });
+
+    } catch (error) {
+      console.error('Error generating content:', error);
+      toast({
+        title: "Generation Failed",
+        description: error instanceof Error ? error.message : "An unexpected error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const togglePlatform = (platform: string) => {
+    setSelectedPlatforms(prev => 
+      prev.includes(platform) 
+        ? prev.filter(p => p !== platform)
+        : [...prev, platform]
+    );
+  };
 
   const startEdit = (platform: string) => {
     setEditingPlatform(platform);
@@ -67,6 +126,47 @@ export const ContentOutput = ({ content, onEdit }: ContentOutputProps) => {
     a.click();
     URL.revokeObjectURL(url);
   };
+
+  if (!hasContent && transcript) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        <Card className="p-6 bg-white/70 backdrop-blur-sm border-slate-200/50 shadow-xl">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-slate-900 mb-4">Generate Social Content</h2>
+            <p className="text-slate-600 mb-6">Select the platforms you want to generate content for:</p>
+            
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              {Object.entries(platformConfig).map(([platform, config]) => {
+                const Icon = config.icon;
+                const isSelected = selectedPlatforms.includes(platform);
+                
+                return (
+                  <Button
+                    key={platform}
+                    variant={isSelected ? "default" : "outline"}
+                    onClick={() => togglePlatform(platform)}
+                    className="flex flex-col items-center space-y-2 h-16"
+                  >
+                    <Icon className={`w-5 h-5 ${isSelected ? 'text-white' : config.color}`} />
+                    <span className="text-sm">{config.name}</span>
+                  </Button>
+                );
+              })}
+            </div>
+
+            <Button 
+              onClick={generateContent} 
+              disabled={isGenerating || selectedPlatforms.length === 0}
+              className="flex items-center space-x-2"
+            >
+              <Wand2 className="w-4 h-4" />
+              <span>{isGenerating ? 'Generating...' : 'Generate Content'}</span>
+            </Button>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto">

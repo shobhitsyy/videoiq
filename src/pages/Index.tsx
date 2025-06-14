@@ -1,5 +1,6 @@
+
 import { useState } from "react";
-import { RotateCcw } from "lucide-react";
+import { RotateCcw, Target, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,7 +16,7 @@ export default function Index() {
   const [transcript, setTranscript] = useState("");
   const [metadata, setMetadata] = useState<{title?: string; duration?: string}>({});
   const [isTranscribing, setIsTranscribing] = useState(false);
-  const [showWelcomePopup, setShowWelcomePopup] = useState(true);
+  const [purpose, setPurpose] = useState<'insights' | 'content' | null>(null);
   const { toast } = useToast();
 
   const handleFileUpload = async (file: File | null, url: string | null) => {
@@ -72,31 +73,17 @@ export default function Index() {
   const handleStartOver = () => {
     setTranscript("");
     setMetadata({});
+    setPurpose(null);
   };
 
-  const WelcomePopup = ({ onClose }: { onClose: () => void }) => {
-    return (
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
-        <Card className="max-w-md p-6 bg-white rounded-lg shadow-xl">
-          <h2 className="text-2xl font-semibold text-slate-900 mb-4">Welcome to EchoScript!</h2>
-          <p className="text-sm text-slate-700 mb-6">
-            EchoScript helps you transcribe audio and video content, then provides AI-powered
-            insights and content repurposing tools.
-          </p>
-          <Button onClick={onClose} className="w-full">
-            Get Started
-          </Button>
-        </Card>
-      </div>
-    );
+  const handlePurposeAndRedirect = (selectedPurpose: 'insights' | 'content') => {
+    setPurpose(selectedPurpose);
+    // Navigate to insights page with the selected purpose
+    window.location.href = `/insights?purpose=${selectedPurpose}`;
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-      {showWelcomePopup && (
-        <WelcomePopup onClose={() => setShowWelcomePopup(false)} />
-      )}
-
       <header className="border-b border-slate-200/50 bg-white/70 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
@@ -131,6 +118,52 @@ export default function Index() {
       </header>
 
       <main className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Purpose Selection Section */}
+        {!purpose && (
+          <div className="mb-12">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
+                What would you like to do today?
+              </h2>
+              <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+                Choose your purpose to get the most relevant AI-powered tools for your content.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto mb-8">
+              <Card 
+                className="p-6 cursor-pointer hover:shadow-lg transition-all duration-200 border-2 hover:border-blue-300"
+                onClick={() => handlePurposeAndRedirect('insights')}
+              >
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Target className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-slate-900 mb-2">Get AI Insights</h3>
+                  <p className="text-slate-600">
+                    Analyze your content to get summaries, key points, and ask questions to understand your material better.
+                  </p>
+                </div>
+              </Card>
+
+              <Card 
+                className="p-6 cursor-pointer hover:shadow-lg transition-all duration-200 border-2 hover:border-purple-300"
+                onClick={() => handlePurposeAndRedirect('content')}
+              >
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Share2 className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-slate-900 mb-2">Create Social Content</h3>
+                  <p className="text-slate-600">
+                    Transform your content into engaging social media posts for Twitter, LinkedIn, Instagram, and blog articles.
+                  </p>
+                </div>
+              </Card>
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Left Column: File Upload and Transcription Display */}
           <div className="flex flex-col">

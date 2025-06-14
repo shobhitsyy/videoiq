@@ -8,7 +8,7 @@ interface ProcessingStatusProps {
 
 const steps = [
   { id: 2, icon: FileText, title: "Transcribing Audio", description: "Converting speech to text..." },
-  { id: 3, icon: Sparkles, title: "Analyzing with Claude AI", description: "Understanding content and generating platform-specific posts..." },
+  { id: 3, icon: Sparkles, title: "Analyzing with Google Gemini", description: "Understanding content and generating platform-specific posts..." },
   { id: 4, icon: Share2, title: "Finalizing Content", description: "Polishing and formatting for each platform..." },
 ];
 
@@ -21,7 +21,7 @@ export const ProcessingStatus = ({ currentStep }: ProcessingStatusProps) => {
             <Loader2 className="w-8 h-8 text-white animate-spin" />
           </div>
           <h2 className="text-2xl font-bold text-slate-900 mb-2">AI Processing Your Content</h2>
-          <p className="text-slate-600">Claude AI is analyzing your content and creating unique posts for each platform</p>
+          <p className="text-slate-600">Google Gemini is analyzing your content and creating unique posts for each platform</p>
         </div>
 
         <div className="space-y-4">

@@ -46,8 +46,8 @@ const Index = () => {
       
       setCurrentStep(3);
       
-      // Step 2: Analyze and generate content
-      console.log('Generating content with Claude...');
+      // Step 2: Analyze and generate content with Google Gemini
+      console.log('Generating content with Google Gemini...');
       const processResponse = await supabase.functions.invoke('process-video', {
         body: {
           transcript,
@@ -57,10 +57,10 @@ const Index = () => {
       });
 
       if (processResponse.error) {
-        // Check if it's a credit balance error
-        if (processResponse.error.message?.includes('credit balance') || 
-            processResponse.error.message?.includes('Insufficient Anthropic API credits')) {
-          throw new Error('Your Anthropic account has insufficient credits. Please add credits at https://console.anthropic.com/settings/billing to continue using AI content generation.');
+        // Check if it's a quota/limit error
+        if (processResponse.error.message?.includes('quota') || 
+            processResponse.error.message?.includes('limit')) {
+          throw new Error('Google API quota exceeded. Please check your API limits at https://console.cloud.google.com/apis/api/generativelanguage.googleapis.com');
         }
         throw new Error(processResponse.error.message);
       }
@@ -125,7 +125,7 @@ const Index = () => {
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-slate-900">ContentAI</h1>
+                <h1 className="text-xl font-bold text-slate-900">EchoScript</h1>
                 <p className="text-sm text-slate-600">AI-Powered Content Generator</p>
               </div>
             </div>

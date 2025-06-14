@@ -7,7 +7,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY');
+const GOOGLE_API_KEY = Deno.env.get('GOOGLE_API_KEY');
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -23,8 +23,8 @@ serve(async (req) => {
       throw new Error('Missing required parameters: transcript and platforms');
     }
 
-    if (!ANTHROPIC_API_KEY) {
-      throw new Error('Anthropic API key not configured. Please add ANTHROPIC_API_KEY to your Supabase secrets.');
+    if (!GOOGLE_API_KEY) {
+      throw new Error('Google API key not configured. Please add GOOGLE_API_KEY to your Supabase secrets.');
     }
 
     // Create platform-specific prompts
@@ -42,40 +42,43 @@ serve(async (req) => {
       const prompt = platformPrompts[platform as keyof typeof platformPrompts];
       
       try {
-        const response = await fetch('https://api.anthropic.com/v1/messages', {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GOOGLE_API_KEY}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'X-API-Key': ANTHROPIC_API_KEY!,
-            'anthropic-version': '2023-06-01'
           },
           body: JSON.stringify({
-            model: 'claude-3-5-sonnet-20241022',
-            max_tokens: 2000,
-            messages: [{
-              role: 'user',
-              content: `${prompt}\n\nTranscript:\n${transcript}`
-            }]
+            contents: [{
+              parts: [{
+                text: `${prompt}\n\nTranscript:\n${transcript}`
+              }]
+            }],
+            generationConfig: {
+              temperature: 0.7,
+              topK: 40,
+              topP: 0.95,
+              maxOutputTokens: 2048,
+            }
           })
         });
 
         if (!response.ok) {
           const errorData = await response.json();
-          console.error(`Anthropic API error for ${platform}:`, errorData);
+          console.error(`Google API error for ${platform}:`, errorData);
           
           // Check for specific error types
-          if (errorData.error?.type === 'invalid_request_error' && 
-              errorData.error?.message?.includes('credit balance')) {
-            throw new Error('Insufficient Anthropic API credits. Please add credits to your Anthropic account at https://console.anthropic.com/settings/billing');
+          if (errorData.error?.message?.includes('quota') || 
+              errorData.error?.message?.includes('limit')) {
+            throw new Error('Google API quota exceeded. Please check your API limits at https://console.cloud.google.com/apis/api/generativelanguage.googleapis.com');
           }
           
           throw new Error(`Failed to generate content for ${platform}: ${errorData.error?.message || 'Unknown error'}`);
         }
 
         const data = await response.json();
-        generatedContent[platform] = data.content[0].text;
+        generatedContent[platform] = data.candidates[0].content.parts[0].text;
         
-        console.log(`Generated content for ${platform}:`, data.content[0].text.substring(0, 100) + '...');
+        console.log(`Generated content for ${platform}:`, data.candidates[0].content.parts[0].text.substring(0, 100) + '...');
       } catch (error) {
         console.error(`Error generating content for ${platform}:`, error);
         // If one platform fails, continue with others but include error info

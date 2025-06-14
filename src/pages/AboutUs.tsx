@@ -106,6 +106,18 @@ const AboutUs = () => {
           </div>
         </Card>
 
+        {/* Creator Section */}
+        <Card className="p-8 mb-12 bg-white/70 backdrop-blur-sm border-slate-200/50 shadow-xl">
+          <div className="text-center">
+            <h2 className="text-3xl font-bold text-slate-900 mb-4">Created by Shobhit Shah</h2>
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+              EchoScript is the brainchild of Shobhit Shah, a passionate developer and content creator who understands 
+              the challenges of extracting valuable insights from multimedia content and the power of AI to transform 
+              how we interact with our digital media.
+            </p>
+          </div>
+        </Card>
+
         {/* Team Section */}
         <div className="text-center">
           <h2 className="text-3xl font-bold text-slate-900 mb-6">Built for Creators, by Creators</h2>

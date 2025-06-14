@@ -102,13 +102,19 @@ export const QuickActions = ({ transcript, metadata, onReset }: QuickActionsProp
           <p className="text-sm text-slate-600 mb-4">
             Upload your audio, video, or paste a YouTube URL to get started with AI analysis
           </p>
-          <FileUpload 
-            onFileUpload={(file) => handleDirectUpload(file, null)}
-            onUrlUpload={(url) => handleDirectUpload(null, url)}
-            uploadedFile={null}
-            uploadedUrl={null}
-            isProcessing={isTranscribing}
-          />
+          {isTranscribing ? (
+            <div className="text-center py-8">
+              <div className="inline-block animate-spin rounded-full h-6 w-6 border-2 border-blue-600 border-t-transparent"></div>
+              <p className="mt-2 text-sm text-slate-600">Processing your content...</p>
+            </div>
+          ) : (
+            <FileUpload 
+              onFileUpload={(file) => handleDirectUpload(file, null)}
+              onUrlUpload={(url) => handleDirectUpload(null, url)}
+              uploadedFile={null}
+              uploadedUrl={null}
+            />
+          )}
         </div>
       </Card>
     );

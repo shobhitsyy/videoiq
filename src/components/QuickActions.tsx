@@ -5,6 +5,9 @@ import { Card } from "@/components/ui/card";
 import { Sparkles, MessageCircle, FileText, Zap } from "lucide-react";
 import { SummaryTab } from "@/components/SummaryTab";
 import { QnATab } from "@/components/QnATab";
+import { FileUpload } from "@/components/FileUpload";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface QuickActionsProps {
   transcript: string;
@@ -16,7 +19,100 @@ interface QuickActionsProps {
 }
 
 export const QuickActions = ({ transcript, metadata, onReset }: QuickActionsProps) => {
-  const [activeAction, setActiveAction] = useState<'summary' | 'qna' | null>(null);
+  const [activeAction, setActiveAction] = useState<'summary' | 'qna' | 'upload' | null>(null);
+  const [directTranscript, setDirectTranscript] = useState("");
+  const [directMetadata, setDirectMetadata] = useState<{title?: string; duration?: string}>({});
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const { toast } = useToast();
+
+  // If no transcript from main flow, show upload option
+  const hasTranscript = transcript || directTranscript;
+  const currentTranscript = transcript || directTranscript;
+  const currentMetadata = transcript ? metadata : directMetadata;
+
+  const handleDirectUpload = async (file: File | null, url: string | null) => {
+    if (!file && !url) return;
+    
+    setIsTranscribing(true);
+    
+    try {
+      const fileToBase64 = (file: File): Promise<string> => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = () => {
+            const base64 = reader.result as string;
+            resolve(base64.split(',')[1]);
+          };
+          reader.onerror = error => reject(error);
+        });
+      };
+
+      const transcribeResponse = await supabase.functions.invoke('transcribe-audio', {
+        body: { 
+          audioData: file ? await fileToBase64(file) : null,
+          url: url 
+        }
+      });
+
+      if (transcribeResponse.error) {
+        throw new Error(transcribeResponse.error.message);
+      }
+
+      const { transcript: generatedTranscript, metadata: transcriptMetadata } = transcribeResponse.data;
+      
+      setDirectTranscript(generatedTranscript);
+      setDirectMetadata(transcriptMetadata || {});
+      setActiveAction('summary'); // Go to summary after transcription
+
+      toast({
+        title: "Content Processed!",
+        description: "Your content has been transcribed and is ready for AI analysis.",
+      });
+
+    } catch (error) {
+      console.error('Error transcribing:', error);
+      toast({
+        title: "Transcription Failed",
+        description: error instanceof Error ? error.message : "An unexpected error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setIsTranscribing(false);
+    }
+  };
+
+  if (activeAction === 'upload') {
+    return (
+      <Card className="p-4 sm:p-6 bg-white/70 backdrop-blur-sm border-slate-200/50 shadow-xl">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-slate-900 flex items-center">
+            <Sparkles className="w-5 h-5 mr-2 text-blue-600" />
+            Quick AI Access
+          </h2>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setActiveAction(null)}
+          >
+            Back
+          </Button>
+        </div>
+        <div className="mb-4">
+          <p className="text-sm text-slate-600 mb-4">
+            Upload your audio, video, or paste a YouTube URL to get started with AI analysis
+          </p>
+          <FileUpload 
+            onFileUpload={(file) => handleDirectUpload(file, null)}
+            onUrlUpload={(url) => handleDirectUpload(null, url)}
+            uploadedFile={null}
+            uploadedUrl={null}
+            isProcessing={isTranscribing}
+          />
+        </div>
+      </Card>
+    );
+  }
 
   if (activeAction === 'summary') {
     return (
@@ -34,7 +130,7 @@ export const QuickActions = ({ transcript, metadata, onReset }: QuickActionsProp
             Back
           </Button>
         </div>
-        <SummaryTab transcript={transcript} metadata={metadata} />
+        <SummaryTab transcript={currentTranscript} metadata={currentMetadata} />
       </Card>
     );
   }
@@ -55,7 +151,7 @@ export const QuickActions = ({ transcript, metadata, onReset }: QuickActionsProp
             Back
           </Button>
         </div>
-        <QnATab transcript={transcript} metadata={metadata} />
+        <QnATab transcript={currentTranscript} metadata={currentMetadata} />
       </Card>
     );
   }
@@ -69,27 +165,44 @@ export const QuickActions = ({ transcript, metadata, onReset }: QuickActionsProp
         </h2>
       </div>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Button
-          onClick={() => setActiveAction('summary')}
-          className="flex items-center justify-center p-4 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-lg shadow-lg transition-all duration-200"
-        >
-          <FileText className="w-5 h-5 mr-2" />
-          Get Summary
-        </Button>
-        
-        <Button
-          onClick={() => setActiveAction('qna')}
-          className="flex items-center justify-center p-4 bg-gradient-to-r from-purple-500 to-violet-600 hover:from-purple-600 hover:to-violet-700 text-white rounded-lg shadow-lg transition-all duration-200"
-        >
-          <MessageCircle className="w-5 h-5 mr-2" />
-          Ask Questions
-        </Button>
-      </div>
-      
-      <p className="text-sm text-slate-600 mt-3 text-center">
-        Access AI features directly without generating platform content
-      </p>
+      {!hasTranscript ? (
+        <div className="text-center">
+          <p className="text-sm text-slate-600 mb-4">
+            Get instant AI insights from your content without going through the full content creation flow
+          </p>
+          <Button
+            onClick={() => setActiveAction('upload')}
+            className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-lg shadow-lg transition-all duration-200"
+          >
+            <Sparkles className="w-5 h-5 mr-2" />
+            Upload Content for AI Analysis
+          </Button>
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Button
+              onClick={() => setActiveAction('summary')}
+              className="flex items-center justify-center p-4 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-lg shadow-lg transition-all duration-200"
+            >
+              <FileText className="w-5 h-5 mr-2" />
+              Get Summary
+            </Button>
+            
+            <Button
+              onClick={() => setActiveAction('qna')}
+              className="flex items-center justify-center p-4 bg-gradient-to-r from-purple-500 to-violet-600 hover:from-purple-600 hover:to-violet-700 text-white rounded-lg shadow-lg transition-all duration-200"
+            >
+              <MessageCircle className="w-5 h-5 mr-2" />
+              Ask Questions
+            </Button>
+          </div>
+          
+          <p className="text-sm text-slate-600 mt-3 text-center">
+            Access AI features directly without generating platform content
+          </p>
+        </>
+      )}
     </Card>
   );
 };

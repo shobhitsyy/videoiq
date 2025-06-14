@@ -15,20 +15,7 @@ interface Review {
 }
 
 export const ReviewSection = () => {
-  const [reviews, setReviews] = useState<Review[]>([
-    {
-      name: "Sarah Chen",
-      rating: 5,
-      comment: "Amazing tool! Saved me hours of work creating content for different platforms.",
-      timestamp: new Date(2024, 5, 10)
-    },
-    {
-      name: "Mike Rodriguez",
-      rating: 4,
-      comment: "The AI summary feature is incredibly accurate. Love the Q&A functionality too!",
-      timestamp: new Date(2024, 5, 8)
-    }
-  ]);
+  const [reviews, setReviews] = useState<Review[]>([]);
   
   const [newReview, setNewReview] = useState({
     name: "",
@@ -97,12 +84,16 @@ export const ReviewSection = () => {
       <div className="flex items-center justify-between mb-4">
         <div>
           <h2 className="text-lg font-semibold text-slate-900">User Reviews</h2>
-          <div className="flex items-center space-x-2 mt-1">
-            <StarRating rating={Math.round(Number(averageRating))} />
-            <span className="text-sm text-slate-600">
-              {averageRating}/5 ({reviews.length} reviews)
-            </span>
-          </div>
+          {reviews.length > 0 ? (
+            <div className="flex items-center space-x-2 mt-1">
+              <StarRating rating={Math.round(Number(averageRating))} />
+              <span className="text-sm text-slate-600">
+                {averageRating}/5 ({reviews.length} review{reviews.length !== 1 ? 's' : ''})
+              </span>
+            </div>
+          ) : (
+            <p className="text-sm text-slate-500 mt-1">No reviews yet. Be the first to review!</p>
+          )}
         </div>
         
         {!showForm && (
@@ -176,22 +167,24 @@ export const ReviewSection = () => {
         </div>
       )}
 
-      <div className="space-y-4 max-h-64 overflow-y-auto">
-        {reviews.map((review, index) => (
-          <div key={index} className="border-l-4 border-blue-200 pl-4 py-2">
-            <div className="flex items-center justify-between mb-1">
-              <span className="font-medium text-slate-900">{review.name}</span>
-              <StarRating rating={review.rating} />
+      {reviews.length > 0 && (
+        <div className="space-y-4 max-h-64 overflow-y-auto">
+          {reviews.map((review, index) => (
+            <div key={index} className="border-l-4 border-blue-200 pl-4 py-2">
+              <div className="flex items-center justify-between mb-1">
+                <span className="font-medium text-slate-900">{review.name}</span>
+                <StarRating rating={review.rating} />
+              </div>
+              {review.comment && (
+                <p className="text-sm text-slate-600 mb-1">{review.comment}</p>
+              )}
+              <p className="text-xs text-slate-400">
+                {review.timestamp.toLocaleDateString()}
+              </p>
             </div>
-            {review.comment && (
-              <p className="text-sm text-slate-600 mb-1">{review.comment}</p>
-            )}
-            <p className="text-xs text-slate-400">
-              {review.timestamp.toLocaleDateString()}
-            </p>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </Card>
   );
 };

@@ -3,6 +3,7 @@ import { RotateCcw, Target, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Link } from "react-router-dom";
+import { ReviewSection } from "@/components/ReviewSection";
 
 export default function Index() {
   return (
@@ -75,7 +76,7 @@ export default function Index() {
         </div>
 
         {/* Additional Information Section */}
-        <div className="text-center">
+        <div className="text-center mb-12">
           <Card className="p-8 bg-white/70 backdrop-blur-sm border-slate-200/50 shadow-xl max-w-3xl mx-auto">
             <h3 className="text-2xl font-bold text-slate-900 mb-4">
               Transform Your Media with AI
@@ -103,6 +104,11 @@ export default function Index() {
               </div>
             </div>
           </Card>
+        </div>
+
+        {/* Reviews Section */}
+        <div className="max-w-3xl mx-auto">
+          <ReviewSection />
         </div>
       </main>
     </div>

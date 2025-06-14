@@ -57,6 +57,11 @@ const Index = () => {
       });
 
       if (processResponse.error) {
+        // Check if it's a credit balance error
+        if (processResponse.error.message?.includes('credit balance') || 
+            processResponse.error.message?.includes('Insufficient Anthropic API credits')) {
+          throw new Error('Your Anthropic account has insufficient credits. Please add credits at https://console.anthropic.com/settings/billing to continue using AI content generation.');
+        }
         throw new Error(processResponse.error.message);
       }
 

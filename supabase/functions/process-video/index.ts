@@ -23,6 +23,10 @@ serve(async (req) => {
       throw new Error('Missing required parameters: transcript and platforms');
     }
 
+    if (!ANTHROPIC_API_KEY) {
+      throw new Error('Anthropic API key not configured. Please add ANTHROPIC_API_KEY to your Supabase secrets.');
+    }
+
     // Create platform-specific prompts
     const platformPrompts = {
       blog: `Create a comprehensive blog article based on this transcript. Make it engaging, well-structured with headings, and suitable for a blog audience. Style: ${style}`,
@@ -37,33 +41,46 @@ serve(async (req) => {
     for (const platform of platforms) {
       const prompt = platformPrompts[platform as keyof typeof platformPrompts];
       
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-Key': ANTHROPIC_API_KEY!,
-          'anthropic-version': '2023-06-01'
-        },
-        body: JSON.stringify({
-          model: 'claude-3-5-sonnet-20241022',
-          max_tokens: 2000,
-          messages: [{
-            role: 'user',
-            content: `${prompt}\n\nTranscript:\n${transcript}`
-          }]
-        })
-      });
+      try {
+        const response = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-Key': ANTHROPIC_API_KEY!,
+            'anthropic-version': '2023-06-01'
+          },
+          body: JSON.stringify({
+            model: 'claude-3-5-sonnet-20241022',
+            max_tokens: 2000,
+            messages: [{
+              role: 'user',
+              content: `${prompt}\n\nTranscript:\n${transcript}`
+            }]
+          })
+        });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`Anthropic API error for ${platform}:`, errorText);
-        throw new Error(`Failed to generate content for ${platform}: ${errorText}`);
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error(`Anthropic API error for ${platform}:`, errorData);
+          
+          // Check for specific error types
+          if (errorData.error?.type === 'invalid_request_error' && 
+              errorData.error?.message?.includes('credit balance')) {
+            throw new Error('Insufficient Anthropic API credits. Please add credits to your Anthropic account at https://console.anthropic.com/settings/billing');
+          }
+          
+          throw new Error(`Failed to generate content for ${platform}: ${errorData.error?.message || 'Unknown error'}`);
+        }
+
+        const data = await response.json();
+        generatedContent[platform] = data.content[0].text;
+        
+        console.log(`Generated content for ${platform}:`, data.content[0].text.substring(0, 100) + '...');
+      } catch (error) {
+        console.error(`Error generating content for ${platform}:`, error);
+        // If one platform fails, continue with others but include error info
+        generatedContent[platform] = `Error generating content for ${platform}: ${error.message}`;
       }
-
-      const data = await response.json();
-      generatedContent[platform] = data.content[0].text;
-      
-      console.log(`Generated content for ${platform}:`, data.content[0].text.substring(0, 100) + '...');
     }
 
     return new Response(

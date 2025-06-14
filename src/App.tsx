@@ -7,7 +7,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import AboutUs from "./pages/AboutUs";
-import InsightsMode from "./pages/InsightsMode";
+import AIInsights from "./pages/AIInsights";
+import SocialContent from "./pages/SocialContent";
 
 const queryClient = new QueryClient();
 
@@ -19,7 +20,8 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/insights" element={<InsightsMode />} />
+          <Route path="/ai-insights" element={<AIInsights />} />
+          <Route path="/social-content" element={<SocialContent />} />
           <Route path="/about" element={<AboutUs />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

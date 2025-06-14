@@ -1,0 +1,173 @@
+
+import { useState } from "react";
+import { ArrowLeft, Target, FileText, MessageSquare } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { FileUpload } from "@/components/FileUpload";
+import { SummaryTab } from "@/components/SummaryTab";
+import { QnATab } from "@/components/QnATab";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+
+const AIInsights = () => {
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [uploadedUrl, setUploadedUrl] = useState<string | null>(null);
+  const [transcript, setTranscript] = useState<string>("");
+  const [metadata, setMetadata] = useState<{ title?: string; duration?: string } | undefined>();
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const { toast } = useToast();
+
+  const handleFileUpload = (file: File | null) => {
+    setUploadedFile(file);
+    if (file) {
+      setTranscript("");
+      setMetadata({ title: file.name });
+      processContent(file, null);
+    }
+  };
+
+  const handleUrlUpload = (url: string | null) => {
+    setUploadedUrl(url);
+    if (url) {
+      setTranscript("");
+      setMetadata({ title: url });
+      processContent(null, url);
+    }
+  };
+
+  const processContent = async (file: File | null, url: string | null) => {
+    if (!file && !url) return;
+    
+    setIsTranscribing(true);
+    
+    try {
+      const fileToBase64 = (file: File): Promise<string> => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = () => {
+            const base64 = reader.result as string;
+            resolve(base64.split(',')[1]);
+          };
+          reader.onerror = error => reject(error);
+        });
+      };
+
+      const transcribeResponse = await supabase.functions.invoke('transcribe-audio', {
+        body: { 
+          audioData: file ? await fileToBase64(file) : null,
+          url: url 
+        }
+      });
+
+      if (transcribeResponse.error) {
+        throw new Error(transcribeResponse.error.message);
+      }
+
+      const { transcript: generatedTranscript, metadata: transcriptMetadata } = transcribeResponse.data;
+      
+      setTranscript(generatedTranscript);
+      setMetadata(transcriptMetadata || {});
+
+      toast({
+        title: "Content Transcribed!",
+        description: "Your content has been transcribed and is ready for AI analysis.",
+      });
+
+    } catch (error) {
+      console.error('Error transcribing:', error);
+      toast({
+        title: "Transcription Failed",
+        description: error instanceof Error ? error.message : "An unexpected error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setIsTranscribing(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      {/* Header */}
+      <header className="border-b border-slate-200/50 bg-white/70 backdrop-blur-sm sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <Link to="/" className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">E</span>
+              </div>
+              <span className="font-bold text-xl text-slate-900">EchoScript</span>
+            </Link>
+            <Link to="/">
+              <Button variant="outline" size="sm" className="flex items-center gap-2">
+                <ArrowLeft className="w-4 h-4" />
+                Back to Home
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Hero Section */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
+            Get <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">AI Insights</span>
+          </h1>
+          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+            Upload your audio or video content and get instant AI-powered summaries and answers to your questions.
+          </p>
+        </div>
+
+        {/* Upload Section */}
+        <Card className="p-6 mb-8 bg-white/70 backdrop-blur-sm border-slate-200/50 shadow-lg">
+          <div className="flex items-center mb-4">
+            <Target className="w-6 h-6 text-blue-600 mr-3" />
+            <h2 className="text-xl font-semibold text-slate-900">Upload Content</h2>
+          </div>
+          {isTranscribing ? (
+            <div className="text-center py-8">
+              <div className="inline-block animate-spin rounded-full h-6 w-6 border-2 border-blue-600 border-t-transparent"></div>
+              <p className="mt-2 text-sm text-slate-600">Transcribing your content...</p>
+            </div>
+          ) : (
+            <FileUpload
+              onFileUpload={handleFileUpload}
+              onUrlUpload={handleUrlUpload}
+              uploadedFile={uploadedFile}
+              uploadedUrl={uploadedUrl}
+            />
+          )}
+        </Card>
+
+        {/* Analysis Tabs */}
+        {transcript && (
+          <Card className="p-6 bg-white/70 backdrop-blur-sm border-slate-200/50 shadow-lg">
+            <Tabs defaultValue="summary" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger value="summary" className="flex items-center gap-2">
+                  <FileText className="w-4 h-4" />
+                  AI Summary
+                </TabsTrigger>
+                <TabsTrigger value="qna" className="flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4" />
+                  Q&A Chat
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent value="summary">
+                <SummaryTab transcript={transcript} metadata={metadata} />
+              </TabsContent>
+              <TabsContent value="qna">
+                <QnATab transcript={transcript} metadata={metadata} />
+              </TabsContent>
+            </Tabs>
+          </Card>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default AIInsights;

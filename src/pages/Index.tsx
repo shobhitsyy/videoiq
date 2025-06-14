@@ -1,11 +1,7 @@
-
 import { useState } from "react";
 import { RotateCcw, Target, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { QuickActions } from "@/components/QuickActions";
 import { FileUpload } from "@/components/FileUpload";
 import { useToast } from "@/hooks/use-toast";
@@ -16,7 +12,6 @@ export default function Index() {
   const [transcript, setTranscript] = useState("");
   const [metadata, setMetadata] = useState<{title?: string; duration?: string}>({});
   const [isTranscribing, setIsTranscribing] = useState(false);
-  const [purpose, setPurpose] = useState<'insights' | 'content' | null>(null);
   const { toast } = useToast();
 
   const handleFileUpload = async (file: File | null, url: string | null) => {
@@ -73,13 +68,6 @@ export default function Index() {
   const handleStartOver = () => {
     setTranscript("");
     setMetadata({});
-    setPurpose(null);
-  };
-
-  const handlePurposeAndRedirect = (selectedPurpose: 'insights' | 'content') => {
-    setPurpose(selectedPurpose);
-    // Navigate to insights page with the selected purpose
-    window.location.href = `/insights?purpose=${selectedPurpose}`;
   };
 
   return (
@@ -119,22 +107,19 @@ export default function Index() {
 
       <main className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Purpose Selection Section */}
-        {!purpose && (
-          <div className="mb-12">
-            <div className="text-center mb-8">
-              <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
-                What would you like to do today?
-              </h2>
-              <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-                Choose your purpose to get the most relevant AI-powered tools for your content.
-              </p>
-            </div>
+        <div className="mb-12">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
+              What would you like to do today?
+            </h2>
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+              Choose your purpose to get the most relevant AI-powered tools for your content.
+            </p>
+          </div>
 
-            <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto mb-8">
-              <Card 
-                className="p-6 cursor-pointer hover:shadow-lg transition-all duration-200 border-2 hover:border-blue-300"
-                onClick={() => handlePurposeAndRedirect('insights')}
-              >
+          <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto mb-8">
+            <Link to="/ai-insights">
+              <Card className="p-6 cursor-pointer hover:shadow-lg transition-all duration-200 border-2 hover:border-blue-300 h-full">
                 <div className="text-center">
                   <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Target className="w-8 h-8 text-white" />
@@ -145,11 +130,10 @@ export default function Index() {
                   </p>
                 </div>
               </Card>
+            </Link>
 
-              <Card 
-                className="p-6 cursor-pointer hover:shadow-lg transition-all duration-200 border-2 hover:border-purple-300"
-                onClick={() => handlePurposeAndRedirect('content')}
-              >
+            <Link to="/social-content">
+              <Card className="p-6 cursor-pointer hover:shadow-lg transition-all duration-200 border-2 hover:border-purple-300 h-full">
                 <div className="text-center">
                   <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Share2 className="w-8 h-8 text-white" />
@@ -160,9 +144,9 @@ export default function Index() {
                   </p>
                 </div>
               </Card>
-            </div>
+            </Link>
           </div>
-        )}
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Left Column: File Upload and Transcription Display */}
@@ -203,11 +187,7 @@ export default function Index() {
                     <span className="text-slate-600">{metadata.duration}</span>
                   </div>
                 )}
-                <Textarea
-                  value={transcript}
-                  onChange={(e) => setTranscript(e.target.value)}
-                  className="w-full h-48 resize-none bg-slate-50 border-slate-200 text-slate-800 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                />
+                
               </Card>
             ) : null}
           </div>

@@ -1,14 +1,38 @@
 
+import { useState } from "react";
 import { ArrowLeft, Upload, FileText, MessageSquare } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import FileUpload from "@/components/FileUpload";
-import SummaryTab from "@/components/SummaryTab";
-import QnATab from "@/components/QnATab";
+import { FileUpload } from "@/components/FileUpload";
+import { SummaryTab } from "@/components/SummaryTab";
+import { QnATab } from "@/components/QnATab";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const InsightsMode = () => {
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [uploadedUrl, setUploadedUrl] = useState<string | null>(null);
+  const [transcript, setTranscript] = useState<string>("");
+  const [metadata, setMetadata] = useState<{ title?: string; duration?: string } | undefined>();
+
+  const handleFileUpload = (file: File | null) => {
+    setUploadedFile(file);
+    // Reset transcript when new file is uploaded
+    if (file) {
+      setTranscript("");
+      setMetadata({ title: file.name });
+    }
+  };
+
+  const handleUrlUpload = (url: string | null) => {
+    setUploadedUrl(url);
+    // Reset transcript when new URL is uploaded
+    if (url) {
+      setTranscript("");
+      setMetadata({ title: url });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       {/* Header */}
@@ -48,7 +72,12 @@ const InsightsMode = () => {
             <Upload className="w-6 h-6 text-blue-600 mr-3" />
             <h2 className="text-xl font-semibold text-slate-900">Upload Content</h2>
           </div>
-          <FileUpload />
+          <FileUpload
+            onFileUpload={handleFileUpload}
+            onUrlUpload={handleUrlUpload}
+            uploadedFile={uploadedFile}
+            uploadedUrl={uploadedUrl}
+          />
         </Card>
 
         {/* Analysis Tabs */}
@@ -65,10 +94,10 @@ const InsightsMode = () => {
               </TabsTrigger>
             </TabsList>
             <TabsContent value="summary" className="mt-6">
-              <SummaryTab />
+              <SummaryTab transcript={transcript} metadata={metadata} />
             </TabsContent>
             <TabsContent value="qna" className="mt-6">
-              <QnATab />
+              <QnATab transcript={transcript} metadata={metadata} />
             </TabsContent>
           </Tabs>
         </Card>

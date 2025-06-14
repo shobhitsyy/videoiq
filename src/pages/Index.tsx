@@ -13,11 +13,11 @@ export default function Index() {
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">E</span>
+                <span className="text-white font-bold text-sm">V</span>
               </div>
               <div>
-                <h1 className="font-bold text-xl text-slate-900">EchoScript</h1>
-                <p className="text-xs text-slate-600">AI-Powered Media Intelligence Hub</p>
+                <h1 className="font-bold text-xl text-slate-900">VideoIQ</h1>
+                <p className="text-xs text-slate-600">AI powered Youtube Intelligence Hub</p>
               </div>
             </div>
             <div className="flex items-center gap-4">
@@ -82,7 +82,7 @@ export default function Index() {
               Transform Your Media with AI
             </h3>
             <p className="text-lg text-slate-600 mb-6">
-              EchoScript makes it easy to extract valuable insights from your audio and video content. 
+              VideoIQ makes it easy to extract valuable insights from your audio and video content. 
               Upload your media files and let our AI do the heavy lifting.
             </p>
             <div className="grid md:grid-cols-2 gap-6 text-left">

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { ArrowLeft, Upload, FileText, MessageSquare, Share2, Target } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
@@ -65,9 +66,9 @@ const InsightsMode = () => {
           <div className="flex justify-between items-center py-4">
             <Link to="/" className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">E</span>
+                <span className="text-white font-bold text-sm">V</span>
               </div>
-              <span className="font-bold text-xl text-slate-900">EchoScript</span>
+              <span className="font-bold text-xl text-slate-900">VideoIQ</span>
             </Link>
             <Link to="/">
               <Button variant="outline" size="sm" className="flex items-center gap-2">

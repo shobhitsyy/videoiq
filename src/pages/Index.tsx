@@ -3,7 +3,7 @@ import { useState } from "react";
 import { FileUpload } from "@/components/FileUpload";
 import { PlatformSelector } from "@/components/PlatformSelector";
 import { StyleSelector } from "@/components/StyleSelector";
-import { ContentOutput } from "@/components/ContentOutput";
+import { ContentTabs } from "@/components/ContentTabs";
 import { ProcessingStatus } from "@/components/ProcessingStatus";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -18,6 +18,8 @@ const Index = () => {
   const [selectedStyle, setSelectedStyle] = useState("friendly");
   const [isProcessing, setIsProcessing] = useState(false);
   const [generatedContent, setGeneratedContent] = useState<Record<string, string>>({});
+  const [transcript, setTranscript] = useState<string>("");
+  const [metadata, setMetadata] = useState<{title?: string; duration?: string}>({});
   const [currentStep, setCurrentStep] = useState(1);
   const { toast } = useToast();
 
@@ -41,8 +43,12 @@ const Index = () => {
         throw new Error(transcribeResponse.error.message);
       }
 
-      const { transcript } = transcribeResponse.data;
+      const { transcript: generatedTranscript, metadata: transcriptMetadata } = transcribeResponse.data;
       console.log('Transcription completed');
+      
+      // Store transcript and metadata for AI tabs
+      setTranscript(generatedTranscript);
+      setMetadata(transcriptMetadata || {});
       
       setCurrentStep(3);
       
@@ -50,7 +56,7 @@ const Index = () => {
       console.log('Generating content with Google Gemini...');
       const processResponse = await supabase.functions.invoke('process-video', {
         body: {
-          transcript,
+          transcript: generatedTranscript,
           platforms: selectedPlatforms,
           style: selectedStyle
         }
@@ -112,6 +118,8 @@ const Index = () => {
     setUploadedUrl(null);
     setSelectedPlatforms([]);
     setGeneratedContent({});
+    setTranscript("");
+    setMetadata({});
     setCurrentStep(1);
     setIsProcessing(false);
   };
@@ -177,7 +185,12 @@ const Index = () => {
         {isProcessing ? (
           <ProcessingStatus currentStep={currentStep} />
         ) : currentStep === 5 ? (
-          <ContentOutput content={generatedContent} onEdit={setGeneratedContent} />
+          <ContentTabs 
+            platformContent={generatedContent} 
+            onContentEdit={setGeneratedContent}
+            transcript={transcript}
+            metadata={metadata}
+          />
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Left Column - Input */}

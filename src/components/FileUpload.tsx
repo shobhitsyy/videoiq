@@ -73,46 +73,17 @@ export const FileUpload = ({ onFileUpload, onUrlUpload, uploadedFile, uploadedUr
   return (
     <div className="space-y-4">
       {!hasUpload ? (
-        <Tabs defaultValue="file" className="w-full">
+        <Tabs defaultValue="url" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="file" className="flex items-center space-x-2">
-              <Upload className="w-4 h-4" />
-              <span>Upload File</span>
-            </TabsTrigger>
             <TabsTrigger value="url" className="flex items-center space-x-2">
               <Link className="w-4 h-4" />
               <span>Paste URL</span>
             </TabsTrigger>
+            <TabsTrigger value="file" className="flex items-center space-x-2">
+              <Upload className="w-4 h-4" />
+              <span>Upload File</span>
+            </TabsTrigger>
           </TabsList>
-
-          <TabsContent value="file" className="mt-4">
-            <div
-              onDrop={handleDrop}
-              onDragOver={(e) => e.preventDefault()}
-              className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center hover:border-blue-400 hover:bg-blue-50/50 transition-all duration-200 cursor-pointer group"
-            >
-              <Upload className="w-12 h-12 mx-auto text-slate-400 group-hover:text-blue-500 transition-colors duration-200 mb-4" />
-              <p className="text-lg font-medium text-slate-700 mb-2">Drop your video or audio file here</p>
-              <p className="text-sm text-slate-500 mb-4">or click to browse</p>
-              <input
-                type="file"
-                accept="video/*,audio/*"
-                onChange={handleFileInput}
-                className="hidden"
-                id="file-input"
-              />
-              <Button 
-                variant="outline" 
-                onClick={() => document.getElementById('file-input')?.click()}
-                className="border-blue-300 text-blue-600 hover:bg-blue-50"
-              >
-                Choose File
-              </Button>
-              <p className="text-xs text-slate-400 mt-3">
-                Supports MP4, MOV, MP3, WAV and other formats • Max 100MB
-              </p>
-            </div>
-          </TabsContent>
 
           <TabsContent value="url" className="mt-4">
             <div className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center hover:border-blue-400 hover:bg-blue-50/50 transition-all duration-200">
@@ -144,6 +115,35 @@ export const FileUpload = ({ onFileUpload, onUrlUpload, uploadedFile, uploadedUr
                 <p className="mb-1">Supported platforms:</p>
                 <p>YouTube • Vimeo • Dailymotion • Facebook • Instagram • TikTok</p>
               </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="file" className="mt-4">
+            <div
+              onDrop={handleDrop}
+              onDragOver={(e) => e.preventDefault()}
+              className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center hover:border-blue-400 hover:bg-blue-50/50 transition-all duration-200 cursor-pointer group"
+            >
+              <Upload className="w-12 h-12 mx-auto text-slate-400 group-hover:text-blue-500 transition-colors duration-200 mb-4" />
+              <p className="text-lg font-medium text-slate-700 mb-2">Drop your video or audio file here</p>
+              <p className="text-sm text-slate-500 mb-4">or click to browse</p>
+              <input
+                type="file"
+                accept="video/*,audio/*"
+                onChange={handleFileInput}
+                className="hidden"
+                id="file-input"
+              />
+              <Button 
+                variant="outline" 
+                onClick={() => document.getElementById('file-input')?.click()}
+                className="border-blue-300 text-blue-600 hover:bg-blue-50"
+              >
+                Choose File
+              </Button>
+              <p className="text-xs text-slate-400 mt-3">
+                Supports MP4, MOV, MP3, WAV and other formats • Max 100MB
+              </p>
             </div>
           </TabsContent>
         </Tabs>

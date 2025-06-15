@@ -38,7 +38,7 @@ const AboutUs = () => {
             About <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">VideoIQ</span>
           </h1>
           <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
-            Transforming the way content creators and businesses extract insights and generate 
+            Transforming the way content creators, businesses, and individuals extract insights and generate 
             engaging social media content from their audio and video materials.
           </p>
         </div>
@@ -51,7 +51,7 @@ const AboutUs = () => {
           </div>
           <p className="text-lg text-slate-700 leading-relaxed">
             At VideoIQ, we believe that every piece of content holds valuable insights waiting to be discovered. 
-            Our AI-powered platform empowers creators, marketers, and businesses to unlock the full potential of their 
+            Our AI-powered platform empowers creators, marketers, businesses, and individuals to unlock the full potential of their 
             audio and video content by providing instant transcription, intelligent analysis, and automated content generation 
             for social media platforms.
           </p>

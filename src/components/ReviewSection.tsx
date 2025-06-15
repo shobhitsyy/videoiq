@@ -1,21 +1,24 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Review {
+  id: string;
   name: string;
   rating: number;
   comment: string;
-  timestamp: Date;
+  created_at: string;
 }
 
 export const ReviewSection = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [loading, setLoading] = useState(true);
   
   const [newReview, setNewReview] = useState({
     name: "",
@@ -24,9 +27,63 @@ export const ReviewSection = () => {
   });
   
   const [showForm, setShowForm] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const { toast } = useToast();
 
-  const handleSubmitReview = () => {
+  // Load reviews from database
+  useEffect(() => {
+    const loadReviews = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('reviews')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Error loading reviews:', error);
+          toast({
+            title: "Error loading reviews",
+            description: "Please try refreshing the page.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        setReviews(data || []);
+      } catch (error) {
+        console.error('Error loading reviews:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadReviews();
+  }, [toast]);
+
+  // Set up real-time subscription for new reviews
+  useEffect(() => {
+    const channel = supabase
+      .channel('reviews-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'reviews'
+        },
+        (payload) => {
+          console.log('New review added:', payload.new);
+          setReviews(prev => [payload.new as Review, ...prev]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const handleSubmitReview = async () => {
     if (!newReview.name.trim() || newReview.rating === 0) {
       toast({
         title: "Missing Information",
@@ -36,21 +93,49 @@ export const ReviewSection = () => {
       return;
     }
 
-    const review: Review = {
-      name: newReview.name.trim(),
-      rating: newReview.rating,
-      comment: newReview.comment.trim(),
-      timestamp: new Date()
-    };
+    setSubmitting(true);
 
-    setReviews(prev => [review, ...prev]);
-    setNewReview({ name: "", rating: 0, comment: "" });
-    setShowForm(false);
+    try {
+      const { data, error } = await supabase
+        .from('reviews')
+        .insert([
+          {
+            name: newReview.name.trim(),
+            rating: newReview.rating,
+            comment: newReview.comment.trim() || null
+          }
+        ])
+        .select()
+        .single();
 
-    toast({
-      title: "Review Submitted!",
-      description: "Thank you for your feedback!",
-    });
+      if (error) {
+        console.error('Error submitting review:', error);
+        toast({
+          title: "Error submitting review",
+          description: "Please try again later.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      console.log('Review submitted successfully:', data);
+      setNewReview({ name: "", rating: 0, comment: "" });
+      setShowForm(false);
+
+      toast({
+        title: "Review Submitted!",
+        description: "Thank you for your feedback!",
+      });
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      toast({
+        title: "Error submitting review",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const StarRating = ({ rating, onRatingChange, interactive = false }: { 
@@ -78,6 +163,16 @@ export const ReviewSection = () => {
   const averageRating = reviews.length > 0 
     ? (reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length).toFixed(1)
     : 0;
+
+  if (loading) {
+    return (
+      <Card className="p-4 sm:p-6 bg-white/70 backdrop-blur-sm border-slate-200/50 shadow-xl">
+        <div className="text-center py-8">
+          <p className="text-slate-600">Loading reviews...</p>
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card className="p-4 sm:p-6 bg-white/70 backdrop-blur-sm border-slate-200/50 shadow-xl">
@@ -121,6 +216,7 @@ export const ReviewSection = () => {
                 onChange={(e) => setNewReview(prev => ({ ...prev, name: e.target.value }))}
                 placeholder="Enter your name"
                 className="w-full"
+                disabled={submitting}
               />
             </div>
             
@@ -131,7 +227,7 @@ export const ReviewSection = () => {
               <StarRating 
                 rating={newReview.rating} 
                 onRatingChange={(rating) => setNewReview(prev => ({ ...prev, rating }))}
-                interactive
+                interactive={!submitting}
               />
             </div>
             
@@ -142,15 +238,20 @@ export const ReviewSection = () => {
               <Textarea
                 value={newReview.comment}
                 onChange={(e) => setNewReview(prev => ({ ...prev, comment: e.target.value }))}
-                placeholder="Share your thoughts about EchoScript..."
+                placeholder="Share your thoughts about VideoIQ..."
                 className="w-full"
                 rows={3}
+                disabled={submitting}
               />
             </div>
             
             <div className="flex space-x-2">
-              <Button onClick={handleSubmitReview} size="sm">
-                Submit Review
+              <Button 
+                onClick={handleSubmitReview} 
+                size="sm"
+                disabled={submitting}
+              >
+                {submitting ? "Submitting..." : "Submit Review"}
               </Button>
               <Button 
                 onClick={() => {
@@ -159,6 +260,7 @@ export const ReviewSection = () => {
                 }}
                 variant="outline"
                 size="sm"
+                disabled={submitting}
               >
                 Cancel
               </Button>
@@ -169,8 +271,8 @@ export const ReviewSection = () => {
 
       {reviews.length > 0 && (
         <div className="space-y-4 max-h-64 overflow-y-auto">
-          {reviews.map((review, index) => (
-            <div key={index} className="border-l-4 border-blue-200 pl-4 py-2">
+          {reviews.map((review) => (
+            <div key={review.id} className="border-l-4 border-blue-200 pl-4 py-2">
               <div className="flex items-center justify-between mb-1">
                 <span className="font-medium text-slate-900">{review.name}</span>
                 <StarRating rating={review.rating} />
@@ -179,7 +281,7 @@ export const ReviewSection = () => {
                 <p className="text-sm text-slate-600 mb-1">{review.comment}</p>
               )}
               <p className="text-xs text-slate-400">
-                {review.timestamp.toLocaleDateString()}
+                {new Date(review.created_at).toLocaleDateString()}
               </p>
             </div>
           ))}

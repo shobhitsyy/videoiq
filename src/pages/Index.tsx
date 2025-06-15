@@ -1,4 +1,3 @@
-
 import { RotateCcw, Target, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -18,7 +17,7 @@ export default function Index() {
               </div>
               <div>
                 <h1 className="font-bold text-xl text-slate-900">VideoIQ</h1>
-                <p className="text-xs text-slate-600">AI powered Youtube Intelligence Hub</p>
+                <p className="text-xs text-slate-600">AI powered Content Intelligence Hub</p>
               </div>
             </div>
             <div className="flex items-center gap-4">

@@ -13,9 +13,9 @@ const AboutUs = () => {
           <div className="flex justify-between items-center py-4">
             <Link to="/" className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">E</span>
+                <span className="text-white font-bold text-sm">V</span>
               </div>
-              <span className="font-bold text-xl text-slate-900">EchoScript</span>
+              <span className="font-bold text-xl text-slate-900">VideoIQ</span>
             </Link>
             <Link to="/">
               <Button variant="outline" size="sm" className="flex items-center gap-2">
@@ -31,7 +31,7 @@ const AboutUs = () => {
         {/* Hero Section */}
         <div className="text-center mb-16">
           <h1 className="text-4xl sm:text-5xl font-bold text-slate-900 mb-6">
-            About <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">EchoScript</span>
+            About <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">VideoIQ</span>
           </h1>
           <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
             Transforming the way content creators and businesses extract insights and generate 
@@ -46,7 +46,7 @@ const AboutUs = () => {
             <h2 className="text-3xl font-bold text-slate-900">Our Mission</h2>
           </div>
           <p className="text-lg text-slate-700 leading-relaxed">
-            At EchoScript, we believe that every piece of content holds valuable insights waiting to be discovered. 
+            At VideoIQ, we believe that every piece of content holds valuable insights waiting to be discovered. 
             Our AI-powered platform empowers creators, marketers, and businesses to unlock the full potential of their 
             audio and video content by providing instant transcription, intelligent analysis, and automated content generation 
             for social media platforms.
@@ -111,7 +111,7 @@ const AboutUs = () => {
           <div className="text-center">
             <h2 className="text-3xl font-bold text-slate-900 mb-4">Created by Shobhit Shah</h2>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              EchoScript is the brainchild of Shobhit Shah, a passionate developer and content creator who understands 
+              VideoIQ is the brainchild of Shobhit Shah, a passionate developer and content creator who understands 
               the challenges of extracting valuable insights from multimedia content and the power of AI to transform 
               how we interact with our digital media.
             </p>
@@ -127,7 +127,7 @@ const AboutUs = () => {
           </p>
           <Link to="/">
             <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-3 rounded-lg shadow-lg transition-all duration-200">
-              Get Started with EchoScript
+              Get Started with VideoIQ
             </Button>
           </Link>
         </div>

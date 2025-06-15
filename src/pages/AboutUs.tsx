@@ -3,6 +3,7 @@ import { ArrowLeft, Users, Target, Zap, Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { MobileMenu } from "@/components/MobileMenu";
 
 const AboutUs = () => {
   return (
@@ -10,19 +11,22 @@ const AboutUs = () => {
       {/* Header */}
       <header className="border-b border-slate-200/50 bg-white/70 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
+          <div className="flex justify-between items-center py-4 relative">
             <Link to="/" className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">V</span>
               </div>
               <span className="font-bold text-xl text-slate-900">VideoIQ</span>
             </Link>
-            <Link to="/">
-              <Button variant="outline" size="sm" className="flex items-center gap-2">
-                <ArrowLeft className="w-4 h-4" />
-                Back to Home
-              </Button>
-            </Link>
+            <div className="flex items-center gap-4">
+              <Link to="/" className="hidden md:block">
+                <Button variant="outline" size="sm" className="flex items-center gap-2">
+                  <ArrowLeft className="w-4 h-4" />
+                  Back to Home
+                </Button>
+              </Link>
+              <MobileMenu />
+            </div>
           </div>
         </div>
       </header>

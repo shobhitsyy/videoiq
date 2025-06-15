@@ -4,13 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { ReviewSection } from "@/components/ReviewSection";
+import { MobileMenu } from "@/components/MobileMenu";
 
 export default function Index() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       <header className="border-b border-slate-200/50 bg-white/70 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
+          <div className="flex justify-between items-center py-4 relative">
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">V</span>
@@ -23,10 +24,11 @@ export default function Index() {
             <div className="flex items-center gap-4">
               <Link 
                 to="/about" 
-                className="text-slate-600 hover:text-slate-900 transition-colors hidden sm:block"
+                className="text-slate-600 hover:text-slate-900 transition-colors hidden md:block"
               >
                 About Us
               </Link>
+              <MobileMenu />
             </div>
           </div>
         </div>

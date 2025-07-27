@@ -1,15 +1,18 @@
 
 import { useState } from "react";
-import { ArrowLeft, Target, FileText, MessageSquare } from "lucide-react";
+import { ArrowLeft, Target, FileText, MessageSquare, AlertCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { FileUpload } from "@/components/FileUpload";
 import { SummaryTab } from "@/components/SummaryTab";
 import { QnATab } from "@/components/QnATab";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/components/AuthProvider";
+import { useUsageTracking } from "@/hooks/useUsageTracking";
 
 const AIInsights = () => {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -18,6 +21,8 @@ const AIInsights = () => {
   const [metadata, setMetadata] = useState<{ title?: string; duration?: string } | undefined>();
   const [isTranscribing, setIsTranscribing] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
+  const { canProcessVideo, videosRemaining, trackVideoProcessing } = useUsageTracking();
 
   const handleFileUpload = (file: File | null) => {
     setUploadedFile(file);
@@ -39,6 +44,27 @@ const AIInsights = () => {
 
   const processContent = async (file: File | null, url: string | null) => {
     if (!file && !url) return;
+    
+    // Check usage limits for non-authenticated users
+    if (!user && !canProcessVideo) {
+      toast({
+        title: "Video Limit Reached",
+        description: "Sign in to continue processing videos with unlimited access.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Track usage before processing
+    const canProceed = await trackVideoProcessing();
+    if (!canProceed) {
+      toast({
+        title: "Unable to Process",
+        description: "Please try again or sign in for unlimited access.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     setIsTranscribing(true);
     
@@ -120,6 +146,22 @@ const AIInsights = () => {
             Upload your audio or video content and get instant AI-powered summaries and answers to your questions.
           </p>
         </div>
+
+        {/* Usage Warning for Anonymous Users */}
+        {!user && (
+          <Alert className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              {canProcessVideo 
+                ? `You have ${videosRemaining} video${videosRemaining === 1 ? '' : 's'} remaining. Sign in for unlimited access.`
+                : "You've reached the 3 video limit. Please sign in to continue with unlimited access."
+              }
+              <Link to="/auth" className="ml-2 underline font-medium">
+                Sign in now
+              </Link>
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Upload Section */}
         <Card className="p-6 mb-8 bg-white/70 backdrop-blur-sm border-slate-200/50 shadow-lg">

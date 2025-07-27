@@ -1,11 +1,17 @@
-import { RotateCcw, Target, Share2 } from "lucide-react";
+import { RotateCcw, Target, Share2, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/components/AuthProvider";
+import { useUsageTracking } from "@/hooks/useUsageTracking";
 import { ReviewSection } from "@/components/ReviewSection";
 import { MobileMenu } from "@/components/MobileMenu";
 
 export default function Index() {
+  const { user, signOut } = useAuth();
+  const { videosProcessed, videosRemaining, canProcessVideo } = useUsageTracking();
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       <header className="border-b border-slate-200/50 bg-white/70 backdrop-blur-sm sticky top-0 z-50">
@@ -27,6 +33,48 @@ export default function Index() {
               >
                 About Us
               </Link>
+              
+              {user ? (
+                <div className="flex items-center gap-3">
+                  <div className="text-right hidden md:block">
+                    <p className="text-xs text-slate-600">Welcome back!</p>
+                    <p className="text-xs text-slate-500">{user.email}</p>
+                  </div>
+                  <Badge variant="secondary" className="hidden md:flex">
+                    <User className="w-3 h-3 mr-1" />
+                    Pro User
+                  </Badge>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={signOut}
+                    className="gap-2"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Sign Out
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <div className="text-right hidden md:block">
+                    <p className="text-xs text-slate-600">
+                      {canProcessVideo ? `${videosRemaining} videos remaining` : 'Limit reached'}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      {canProcessVideo ? 'Sign in for unlimited access' : 'Sign in to continue'}
+                    </p>
+                  </div>
+                  <Badge variant={canProcessVideo ? "secondary" : "destructive"}>
+                    {videosProcessed}/3 used
+                  </Badge>
+                  <Link to="/auth">
+                    <Button size="sm">
+                      Sign In
+                    </Button>
+                  </Link>
+                </div>
+              )}
+              
               <MobileMenu />
             </div>
           </div>

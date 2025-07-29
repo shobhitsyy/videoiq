@@ -76,7 +76,7 @@ export default function Auth() {
     }
   };
 
-  const handleSocialAuth = async (provider: 'google' | 'github' | 'linkedin_oidc') => {
+  const handleSocialAuth = async (provider: 'google') => {
     setLoading(true);
     setError('');
     
@@ -132,24 +132,6 @@ export default function Auth() {
                   >
                     <Icons.google className="mr-2 h-4 w-4" />
                     Continue with Google
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => handleSocialAuth('github')}
-                    disabled={loading}
-                    className="w-full"
-                  >
-                    <Icons.gitHub className="mr-2 h-4 w-4" />
-                    Continue with GitHub
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => handleSocialAuth('linkedin_oidc')}
-                    disabled={loading}
-                    className="w-full"
-                  >
-                    <Icons.linkedin className="mr-2 h-4 w-4" />
-                    Continue with LinkedIn
                   </Button>
                 </div>
                 
@@ -214,24 +196,6 @@ export default function Auth() {
                   >
                     <Icons.google className="mr-2 h-4 w-4" />
                     Sign up with Google
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => handleSocialAuth('github')}
-                    disabled={loading}
-                    className="w-full"
-                  >
-                    <Icons.gitHub className="mr-2 h-4 w-4" />
-                    Sign up with GitHub
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => handleSocialAuth('linkedin_oidc')}
-                    disabled={loading}
-                    className="w-full"
-                  >
-                    <Icons.linkedin className="mr-2 h-4 w-4" />
-                    Sign up with LinkedIn
                   </Button>
                 </div>
                 

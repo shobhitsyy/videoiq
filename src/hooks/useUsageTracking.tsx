@@ -28,36 +28,23 @@ export const useUsageTracking = (): UsageTracking => {
   const loadUsageData = async () => {
     setIsLoading(true);
     try {
-      if (user) {
-        // For authenticated users, count today's videos
-        const today = new Date().toISOString().split('T')[0];
-        const { data, error } = await supabase
-          .from('user_usage_stats')
-          .select('video_count')
-          .eq('user_id', user.id)
-          .eq('date', today)
-          .maybeSingle();
-
-        if (error && error.code !== 'PGRST116') {
-          console.error('Error loading user usage:', error);
+      // Use backend validation function
+      const { data, error } = await supabase.functions.invoke('validate-usage', {
+        body: {
+          sessionId: user ? undefined : getSessionId(),
+          userId: user?.id
         }
-        setVideosProcessed(data?.video_count || 0);
+      });
+
+      if (error) {
+        console.error('Error loading usage data:', error);
+        setVideosProcessed(0);
       } else {
-        // For anonymous users, check session
-        const sessionId = getSessionId();
-        const { data, error } = await supabase
-          .from('anonymous_sessions')
-          .select('video_count')
-          .eq('session_id', sessionId)
-          .maybeSingle();
-
-        if (error && error.code !== 'PGRST116') {
-          console.error('Error loading anonymous usage:', error);
-        }
-        setVideosProcessed(data?.video_count || 0);
+        setVideosProcessed(data.videosProcessed);
       }
     } catch (error) {
       console.error('Error in loadUsageData:', error);
+      setVideosProcessed(0);
     } finally {
       setIsLoading(false);
     }
